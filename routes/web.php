@@ -7,11 +7,14 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ExampController;
 use App\Http\Controllers\PlacementController;
 use App\Http\Controllers\MonitorController;
+use App\Http\Controllers\AuthController;
 
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.proses');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-
-// langsung ke daftar siswa
-Route::get('/', function () {
+Route::middleware(['auth'])->group(function (){
+    Route::get('/', function () {
     return redirect()->route('students.index');
 });
 
@@ -35,6 +38,9 @@ Route::get('/placements', [PlacementController::class, 'index'])->name('placemen
 Route::post('/placements', [PlacementController::class, 'store'])->name('placements.store');
 Route::delete('/placements/{placement}', [PlacementController::class, 'destroy'])->name('placements.destroy');
 
-// Routes untuk Dashboard Pengawas
+
 Route::get('/monitor/{room_id}', [MonitorController::class, 'index'])->name('monitor.index');
 Route::get('/monitor/data/{room_id}', [MonitorController::class, 'getData']);
+
+
+});

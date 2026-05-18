@@ -31,6 +31,16 @@
                 </ul>
                 
             </div>
+            <div class="ms-auto d-flex align-items-center gap-3">
+        @auth
+            <span class="text-white small">Halo, <strong>{{ Auth::user()->name }}</strong></span>
+            
+            <form action="{{ route('logout') }}" method="POST" class="m-0">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-danger">Keluar</button>
+            </form>
+        @endauth
+    </div>
         </div>
     </nav>
     <div class="container">
