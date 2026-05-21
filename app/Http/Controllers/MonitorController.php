@@ -7,70 +7,91 @@ use App\Models\Exam;
 use App\Models\Placement;
 use App\Models\Attendance;
 use App\Models\Examp;
-use Carbon\Carbon;
-
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class MonitorController extends Controller
 {
-    
     public function index($room_id)
     {
         $room = Room::findOrFail($room_id);
-        return view('index', compact('room'));
+        return view('monitor', compact('room')); 
     }
 
-    // mengirim data kehadiran untuk ditampilkan di monitor
     public function getData($room_id)
     {
-        $now = Carbon::now();
+
+        $now = Carbon::now('Asia/Jakarta');
         
-        // cari ujian yang berlangsung
+        //cek ujian aktif di rooms
         $activeExamp = Examp::where('tanggal', $now->toDateString())
                           ->where('waktu_mulai', '<=', $now->toTimeString())
                           ->where('waktu_selesai', '>=', $now->toTimeString())
                           ->first();
 
         if (!$activeExamp) {
-            return response()->json(['status' => 'offline', 'message' => 'Tidak ada ujian aktif saat ini di ruangan ini.']);
+            return response()->json([
+                'status' => 'offline', 
+                'message' => 'Tidak ada ujian aktif saat ini di ruangan ini (Jam Server: ' . $now->format('H:i:s') . ')'
+            ]);
         }
 
-        // cari siswa yang dialokasikan ke ruangan ini untuk ujian ini
-        $placements = Placement::where('room_id', $room_id)
-                               ->where('exam_id', $activeExamp->id)
-                               ->pluck('student_id'); // Ambil ID siswanya saja
+        //ambil data penempatan siswa
+        $placements = Placement::with('student')
+                               ->where('room_id', $room_id)
+                               ->where('examp_id', $activeExamp->id)
+                               ->get();
         
-        $totalSiswa = $placements->count();
+        $studentIds = $placements->pluck('student_id');
 
-        // cari data presensi siswa-siswa  pada hari ini
-        $attendances = Attendance::with('student')
-            ->whereIn('student_id', $placements)
-            ->whereDate('created_at', $now->toDateString())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // ambil data yang sudah hadir
+        $attendances = Attendance::whereIn('student_id', $studentIds)
+                                 ->whereDate('created_at', $now->toDateString())
+                                 ->get()
+                                 ->keyBy('student_id'); // Mempermudah pencocokan ID
 
-        $hadir = $attendances->count();
-        $belumHadir = $totalSiswa - $hadir;
-
-        // format data log verifikasi terakhir agar rapi dibaca oleh JavaScript
-        $logs = $attendances->map(function($att) {
+        // peta status kehadiran
+        $allStudents = $placements->map(function($place) use ($attendances) {
+            $sudahHadir = $attendances->has($place->student_id);
             return [
-                'nama' => $att->student->nama,
-                'kelas' => $att->student->kelas,
-                'waktu' => $att->created_at->format('H:i:s'),
-                'photo' => asset('storage/' . $att->student->photo_path)
+                'nama' => $place->student->nama,
+                'kelas' => $place->student->kelas,
+                'photo' => asset('storage/' . $place->student->photo_path),
+                'status' => $sudahHadir ? 'Hadir' : 'Belum Datang',
+                'waktu' => $sudahHadir ? $attendances[$place->student_id]->created_at->format('H:i:s') : '-'
             ];
         });
 
+        // recent log
+        $recentLogs = Attendance::with('student')
+                                ->whereIn('student_id', $studentIds)
+                                ->whereDate('created_at', $now->toDateString())
+                                ->orderBy('created_at', 'desc')
+                                ->take(5)
+                                ->get()
+                                ->map(function($att) {
+                                    return [
+                                        'nama' => $att->student->nama,
+                                        'kelas' => $att->student->kelas,
+                                        'waktu' => $att->created_at->format('H:i:s'),
+                                        'photo' => asset('storage/' . $att->student->photo_path)
+                                    ];
+                                });
+
+        $totalSiswa = $placements->count();
+        $hadir = $attendances->count();
+        $belumHadir = $totalSiswa - $hadir;
+
         return response()->json([
             'status' => 'online',
-            'exam' => $activeExamp->mata_pelajaran . ' (' . $activeExamp->sesi . ')',
+            'examp' => $activeExamp->mata_pelajaran . ' (' . $activeExamp->sesi . ')',
             'stats' => [
                 'total' => $totalSiswa,
                 'hadir' => $hadir,
                 'belum' => $belumHadir
             ],
-            'logs' => $logs
+            'all_students' => $allStudents,
+            'logs' => $recentLogs
         ]);
     }
 }

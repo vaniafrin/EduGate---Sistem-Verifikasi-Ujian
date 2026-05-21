@@ -55,7 +55,8 @@ class ExampController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $examp = Examp::findOrFail($id);
+        return view('examps.edit', compact('examp'));
     }
 
     /**
@@ -63,7 +64,25 @@ class ExampController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'mata_pelajaran' => 'required|string|max:255',
+            'sesi'           => 'required|string|max:255',
+            'tanggal'         => 'required|date',
+            'waktu_mulai'     => 'required',
+            'waktu_selesai'   => 'required|after:waktu_mulai',
+        ]);
+
+        $examp = Examp::findOrFail($id);
+        
+        $examp->update([
+            'mata_pelajaran' => $request->mata_pelajaran,
+            'sesi'           => $request->sesi,
+            'tanggal'         => $request->tanggal,
+            'waktu_mulai'     => $request->waktu_mulai,
+            'waktu_selesai'   => $request->waktu_selesai,
+        ]);
+
+        return redirect()->route('examps.index')->with('success', 'Jadwal ujian berhasil diperbarui!');
     }
 
     /**

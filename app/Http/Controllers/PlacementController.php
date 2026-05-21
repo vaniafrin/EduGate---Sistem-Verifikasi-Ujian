@@ -30,7 +30,15 @@ class PlacementController extends Controller
      */
     public function create()
     {
-        
+        $rooms = Room::all();
+        $examps = Examp::all(); // Mengikuti nama model kamu
+    
+        $placements = Placement::with(['student', 'room', 'examp'])
+                            ->latest()
+                            ->get()
+                            ->groupBy('room_id'); // KUNCI PERUBAHAN
+
+        return view('placements.create', compact('rooms', 'examps', 'placements'));
     }
 
     /**
@@ -44,15 +52,15 @@ class PlacementController extends Controller
             'student_ids' => 'required|array',
         ]);
 
-        foreach ($request->student_ids as $student_id) {
-            // cek agar tidak ada duplikasi 
-            Placement::updateOrCreate(
-                ['student_id' => $student_id, 'examp_id' => $request->examp_id],
-                ['room_id' => $request->room_id]
-            );
-        }
+        foreach($request->student_ids as $student_id) {
+        Placement::create([
+            'examp_id' => $request->examp_id,
+            'room_id' => $request->room_id,
+            'student_id' => $student_id
+        ]);
+    }
 
-        return back()->with('success', 'Peserta berhasil dialokasikan ke ruangan!');
+        return redirect()->back()->with('success', 'Berhasil dialokasikan!');
     }
 
     /**

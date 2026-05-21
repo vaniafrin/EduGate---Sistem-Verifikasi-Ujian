@@ -31,7 +31,7 @@
                 <h4 id="res-nama"></h4>
                 <p id="res-kelas" class="text-muted"></p>
                 <hr>
-                <div id="verify-status" class="fw-bold">Menunggu Verifikasi Wajah...</div>
+                <div id="verify-status" class="fw-bold">Memverifikasi wajah...</div>
             </div>
         </div>
     </div>
@@ -43,7 +43,7 @@
     const rfidInput = document.getElementById('rfid_input');
     let modelsLoaded = false;
 
-    // 1. Load Model AI
+    //load model ai
     Promise.all([
         faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
         faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
@@ -59,7 +59,7 @@
             });
     }
 
-    // 2. Deteksi Tapping Kartu
+    // detect tap kartu
     document.addEventListener('click', () => rfidInput.focus()); // Jaga fokus tetap di input
     rfidInput.addEventListener('change', async (e) => {
         const uid = e.target.value;
@@ -67,7 +67,7 @@
 
         document.getElementById('status-box').innerHTML = "Mengecek Kartu...";
         
-        // Cari siswa ke server
+        
         const response = await fetch(`/check-rfid/${uid}/{{ $room->id }}`);
         const data = await response.json();
 
@@ -78,7 +78,7 @@
             alert(data.message);
         }
         
-        e.target.value = ''; // Reset input
+        e.target.value = ''; 
     });
 
     function showStudent(data) {
@@ -88,9 +88,9 @@
         document.getElementById('ref-photo').src = data.photo_url;
     }
 
-    // 3. Bandingkan Wajah Webcam dengan Foto Profil
+  // perbandingan wajah dengan foto profil
     async function verifyFace(student) {
-        // Ambil descriptor dari foto profil (Referensi)
+        
         const refImg = await faceapi.fetchImage(student.photo_url);
         const refResult = await faceapi.detectSingleFace(refImg).withFaceLandmarks().withFaceDescriptor();
 
@@ -99,20 +99,28 @@
             return;
         }
 
-        const faceMatcher = new faceapi.FaceMatcher(refResult);
+        
+        const distanceThreshold = 0.45;
+        const faceMatcher = new faceapi.FaceMatcher(refResult, distanceThreshold);
 
-        // Scan wajah dari webcam selama 5 detik
+        // scan wajah setiap 500ms
         const scanInterval = setInterval(async () => {
             const detections = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
 
             if (detections) {
+               
                 const match = faceMatcher.findBestMatch(detections.descriptor);
                 
-                // Jika tingkat kecocokan tinggi (semakin kecil angkanya semakin mirip, default < 0.6)
-                if (match.distance < 0.5) {
+                if (match.label !== "unknown") {
                     clearInterval(scanInterval);
                     successVerification(student.student_id, match.distance);
+                } else {
+                    document.getElementById('verify-status').innerHTML = 
+                        "<span class='text-danger'>✖ Wajah tidak cocok! (Skor: " + match.distance.toFixed(2) + ")</span>";
                 }
+            } else {
+                document.getElementById('verify-status').innerHTML = 
+                    "<span class='text-warning'>Menunggu wajah di kamera...</span>";
             }
         }, 500);
     }
@@ -122,14 +130,14 @@
         document.getElementById('status-box').className = "alert alert-success mt-3";
         document.getElementById('status-box').innerText = "Presensi Berhasil!";
 
-        // Simpan ke database
+        // simpan ke database
         await fetch('/attendance/store', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
             body: JSON.stringify({ student_id: id, score: score })
         });
 
-        // Reset setelah 3 detik untuk siswa berikutnya
+        
         setTimeout(() => location.reload(), 3000);
     }
 </script>

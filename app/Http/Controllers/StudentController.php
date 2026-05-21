@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use Illuminate\Support\Facades\DB;
 use App\Models\Student;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
@@ -10,10 +12,13 @@ class StudentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function indexClasses()
     {
-        $students = Student::all();
-        return view('students.index', compact('students'));
+        $classes = Student::select('kelas', DB::raw('count(*) as total'))
+                                      ->groupBy('kelas')
+                                      ->get();
+                                      
+        return view('students.classes', compact('classes'));
     }
 
     /**
@@ -56,9 +61,16 @@ class StudentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function showClass($kelas)
     {
-        //
+        $students = Student::where('kelas', $kelas)->get();
+        return view('students.index', compact('students', 'kelas'));
+    }
+
+    public function getStudentsByClass($kelas)
+    {
+        $students = Student::where('kelas', $kelas)->orderBy('nama', 'asc')->get();
+        return response()->json($students);
     }
 
     /**

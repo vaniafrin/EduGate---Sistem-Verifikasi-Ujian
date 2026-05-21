@@ -1,9 +1,15 @@
 @extends('layout')
 
 @section('content')
+<div class="mb-3">
+    <a href="{{ route('students.index') }}" class="btn btn-secondary btn-sm">
+        &larr; Kembali ke Daftar Kelas
+    </a>
+</div>
+
 <div class="card shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Daftar Siswa</h5>
+        <h5 class="mb-0">Daftar Siswa- Kelas {{ $kelas ?? 'Semua' }}</h5>
         <a href="{{ route('students.create') }}" class="btn btn-primary btn-sm">+ Tambah Siswa</a>
     </div>
     <div class="card-body">
@@ -25,13 +31,13 @@
                 @foreach($students as $key => $student)
                 <tr>
                     <td>{{ $key + 1 }}</td>
-                    <td>
+                    <!-- <td>
                         @if($student->photo_path)
                             <img src="{{ asset('storage/' . $student->photo_path) }}" alt="Foto" width="50" height="50" class="rounded-circle" style="object-fit: cover;">
                         @else
                             <span class="badge bg-secondary">No Photo</span>
                         @endif
-                     </td>
+                     </td>  -->
                     <td>{{ $student->nisn }}</td>
                     <td>{{ $student->nama }}</td>
                     <td>{{ $student->kelas }}</td>
