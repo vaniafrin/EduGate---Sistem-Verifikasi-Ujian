@@ -68,6 +68,7 @@ class AttendanceController extends Controller
         // jika semua ok, kirim data siswa untuk verifikasi wajah
         return response()->json([
             'success' => true,
+            'nisn' => $student->nisn,
             'nama' => $student->nama,
             'kelas' => $student->kelas,
             'photo_url' => asset('storage/' . $student->photo_path),

@@ -8,6 +8,7 @@ use App\Http\Controllers\ExampController;
 use App\Http\Controllers\PlacementController;
 use App\Http\Controllers\MonitorController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.proses');
@@ -32,7 +33,7 @@ Route::delete('/examps/{examp}', [ExampController::class, 'destroy'])->name('exa
 Route::get('/scanner/{room_id}', [AttendanceController::class, 'index'])->name('scanner'); 
 Route::get('/check-rfid/{uid}/{room_id}', [AttendanceController::class, 'checkRfid']);
 Route::post('/attendance/store', [AttendanceController::class, 'store']);
-Route::get('/dashboard', [AttendanceController::class, 'dashboard'])->name('dashboard');
+// Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
  
 Route::get('/students', [StudentController::class, 'indexClasses'])->name('students.index');
 Route::get('/students/class/{kelas}', [StudentController::class, 'showClass'])->name('students.class');
@@ -44,9 +45,12 @@ Route::get('/placements/create', [PlacementController::class, 'create'])->name('
 Route::post('/placements', [PlacementController::class, 'store'])->name('placements.store');
 Route::delete('/placements/{placement}', [PlacementController::class, 'destroy'])->name('placements.destroy');
 
-
 Route::get('/monitor/{room_id}', [MonitorController::class, 'index'])->name('monitor.index');
 Route::get('/monitor/data/{room_id}', [MonitorController::class, 'getData']);
 
+Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+Route::get('/reports/anomalies', [ReportController::class, 'anomalyLog'])->name('reports.anomalies');
+Route::get('/reports/export/excel/{examp_id}', [ReportController::class, 'exportCsv'])->name('reports.excel');
+Route::get('/reports/export/pdf/{examp_id}', [ReportController::class, 'printPdf'])->name('reports.pdf');
 
 });
