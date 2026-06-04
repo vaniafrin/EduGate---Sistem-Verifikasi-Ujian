@@ -16,17 +16,9 @@
 </head>
 <body>
 
-<div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom no-print">
-    <span class="text-muted small">💡 Tips: Atur tujuan cetak ke <strong>"Save as PDF"</strong> untuk mengunduh versi file digitalnya.</span>
-    <div>
-        <button onclick="window.close()" class="btn btn-sm btn-secondary me-1">Tutup Halaman</button>
-        <button onclick="window.print()" class="btn btn-sm btn-danger"><i class="bi bi-printer"></i> Cetak Sekarang</button>
-    </div>
-</div>
-
 <div class="text-center mb-4">
-    <h3 class="fw-bold mb-1">BERITA ACARA & LAPORAN KEHADIRAN UJIAN</h3>
-    <h5 class="text-muted fw-normal">Platform Sistem Akademik EduGate</h5>
+    <h3 class="fw-bold mb-1">LAPORAN KEHADIRAN UJIAN</h3>
+    <h5 class="text-muted fw-normal">Sistem Akademik EduGate</h5>
 </div>
 
 <div class="row mb-4" style="font-size: 14px;">

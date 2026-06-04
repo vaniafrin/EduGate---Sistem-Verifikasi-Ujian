@@ -72,7 +72,8 @@ class AttendanceController extends Controller
             'nama' => $student->nama,
             'kelas' => $student->kelas,
             'photo_url' => asset('storage/' . $student->photo_path),
-            'student_id' => $student->id
+            'student_id' => $student->id,
+            'examp_id' => $activeExamp->id
         ]);
     }
 
@@ -81,9 +82,11 @@ class AttendanceController extends Controller
     {
         Attendance::create([
             'student_id' => $request->student_id,
+            'examp_id' => $request->examp_id,
             'scanned_at' => Carbon::now(),
             'status' => 'Valid',
             'confidence_score' => $request->score
+            
         ]);
 
         return response()->json(['success' => true]);
