@@ -36,7 +36,7 @@ EduGate bukan sekadar pendataan biasa. Sistem ini memadukan **Kemudahan Manajeme
 ## 🛠️ Tech Stack
 
 Aplikasi ini dibangun menggunakan kombinasi arsitektur modern yang tangguh:
-- **Backend:** Laravel (PHP 8.x)
+- **Backend:** Laravel (PHP 8.5)
 - **Database:** MySQL
 - **Frontend:** Bootstrap 5, Bootstrap Icons, Vanilla JavaScript (DOM & Fetch API)
 - **Utilitas:** Carbon (Manipulasi Waktu/Timezone)
